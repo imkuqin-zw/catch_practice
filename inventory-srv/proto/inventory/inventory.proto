@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package zw.com.shop.srv.inventory;
+
+service Inventory {
+    rpc UpdateInventory(ReqUpdateInventory) returns (InventoryCount) {}
+    rpc GetInventory(GoodsId) returns (InventoryCount) {}
+    rpc PingPong(stream Ping) returns (stream Pong) {}
+}
+
+message ReqUpdateInventory {
+    uint32 goods_id = 1;
+    int64 num = 2;
+}
+
+message GoodsId {
+    uint32 goods_id = 1;
+}
+
+message InventoryCount {
+    uint64 count = 1;
+}
+
+message Ping {
+    int64 stroke = 1;
+}
+
+message Pong {
+    int64 stroke = 1;
+}
+
