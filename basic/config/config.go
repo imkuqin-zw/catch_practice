@@ -44,7 +44,6 @@ func (c *configurator) Path(path string, config interface{}) (err error) {
 	} else {
 		err = fmt.Errorf("[Path] config not found，err：%s", path)
 	}
-
 	return
 }
 
@@ -69,6 +68,8 @@ func (c *configurator) init(ops Options) (err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	//监听配置变化
 	//c.watch()
 	// 标记已经初始化
 	inited = true
