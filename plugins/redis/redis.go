@@ -61,7 +61,7 @@ func initRedis() {
 		return
 	}
 
-	log.Log("[initRedis] init redis start")
+	log.Log("[initRedis] redis initializing start")
 	c := config.C()
 	cfg := &redis{}
 	err := c.App("redis", cfg)
@@ -69,30 +69,8 @@ func initRedis() {
 		log.Fatalf("[initRedis] %s", err)
 		panic(err)
 	}
-	if cfg.Sentinel != nil {
-		log.Log("[initRedis] init redis，sentinel mode")
-		initSentinel(cfg)
-	} else {
-		addrCount := len(cfg.Addr)
-		if addrCount == 0 {
-			log.Fatalf("[initRedis] %s", "not found redis addr in config")
-			panic(err)
-		}
-		if addrCount > 1 {
-			log.Log("[initRedis] init redis，normal mode")
-			initSingle(cfg)
-		} else {
-			log.Log("[initRedis] init redis，cluster mode")
-			initCluster(cfg)
-		}
-	}
-
-	log.Log("[initRedis] init Redis，check ping")
-	pong, err := client.Ping().Result()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	log.Logf("[initRedis] init Redis，check Ping %s", pong)
+	connReids(cfg)
+	log.Logf("[initRedis] redis initializing completed")
 }
 
 func initSingle(redisConfig *redis) {
@@ -137,7 +115,32 @@ func initCluster(redisConfig *redis) {
 	})
 }
 
+func connReids(cfg *redis) {
+	if cfg.Sentinel != nil {
+		log.Log("[initRedis] init redis，sentinel mode")
+		initSentinel(cfg)
+	} else {
+		addrCount := len(cfg.Addr)
+		if addrCount == 0 {
+			log.Fatalf("[initRedis] %s", "not found redis addr in config")
+		}
+		if addrCount > 1 {
+			log.Log("[initRedis] init redis，normal mode")
+			initSingle(cfg)
+		} else {
+			log.Log("[initRedis] init redis，cluster mode")
+			initCluster(cfg)
+		}
+	}
+	log.Log("[initRedis] init Redis，check ping")
+	pong, err := client.Ping().Result()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Logf("[initRedis] init Redis，check Ping %s", pong)
+}
+
 // Redis 获取redis
-func Redis() r.Cmdable {
+func GetRedis() r.Cmdable {
 	return client
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"go.uber.org/zap"
 
 	inventory "shop/inventory-srv/proto/inventory"
@@ -19,6 +20,9 @@ func (e *Inventory) UpdateInventory(ctx context.Context, req *inventory.ReqUpdat
 // Stream is a server side stream handler called via client.Stream or the generated client code
 func (e *Inventory) GetInventory(ctx context.Context, req *inventory.GoodsId, rsp *inventory.InventoryCount) error {
 	log.Debug("Received inventory.GetInventory request", zap.Uint32("goods_id", req.GoodsId))
+	if req.GoodsId == 0 {
+		return fmt.Errorf("goods id must greater than zero")
+	}
 	rsp.Count = 20
 	return nil
 }

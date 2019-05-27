@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"github.com/micro/cli"
 	"github.com/micro/go-config/source/etcd"
 	"github.com/micro/go-micro"
@@ -12,6 +11,8 @@ import (
 	"shop/basic/common"
 	"shop/basic/config"
 	"shop/inventory-srv/handler"
+	"shop/inventory-srv/model"
+	"shop/inventory-srv/service"
 	z "shop/plugins/zap"
 	"strings"
 	"time"
@@ -20,8 +21,8 @@ import (
 )
 
 var (
-	appName  = flag.String("cfg_name", "inventory-srv", "service config name")
-	etcdAddr = flag.String("cfg_addr", "127.0.0.1:2379", "config etcd address")
+	appName  string
+	etcdAddr string
 	cfg      = &inventoryCfg{}
 	log      = z.GetLogger()
 )
@@ -31,35 +32,51 @@ type inventoryCfg struct {
 }
 
 func main() {
-	flag.Parse()
+	svr := micro.NewService(
+		micro.Flags(
+			cli.StringFlag{
+				Name:        "cfg_name",
+				Usage:       "service config name",
+				Value:       "inventory-srv",
+				Destination: &appName,
+			},
+			cli.StringFlag{
+				Name:        "cfg_addr",
+				Usage:       "config etcd address",
+				Value:       "192.168.2.118:2379",
+				Destination: &etcdAddr,
+			},
+		),
+	)
+	// Initialise Cmd
+	svr.Init()
+
 	initCfg()
 	micReg := etcdv3.NewRegistry(registryOptions)
-
-	// New Service
-	service := micro.NewService(
+	// Initialise service
+	svr.Init(
 		micro.Name(cfg.Name),
 		micro.Version(cfg.Version),
 		micro.Registry(micReg),
 		micro.RegisterInterval(cfg.RegInterval),
 		micro.RegisterTTL(cfg.RegTTL),
+		micro.RegisterInterval(cfg.RegTTL),
 		micro.Address(cfg.Address),
-	)
-
-	// Initialise service
-	service.Init(
 		micro.Action(func(context *cli.Context) {
-			//// 初始化handler
-			//model.Init()
-			// 初始化handler
+			//init model
+			model.Init()
+			//init service
+			service.Init()
+			//init handler
 			handler.Init()
 		}),
 	)
 
 	//Register Handler
-	inventory.RegisterInventoryHandler(service.Server(), new(handler.Inventory))
+	inventory.RegisterInventoryHandler(svr.Server(), new(handler.Inventory))
 
 	// Run service
-	if err := service.Run(); err != nil {
+	if err := svr.Run(); err != nil {
 		log.Fatal("service fault", zap.Error(err))
 	}
 }
@@ -76,12 +93,12 @@ func registryOptions(opts *registry.Options) {
 
 func initCfg() {
 	source := etcd.NewSource(
-		etcd.WithAddress(strings.Split(*etcdAddr, ",")...),
+		etcd.WithAddress(strings.Split(etcdAddr, ",")...),
 		etcd.WithPrefix("zw.com/shop"),
 	)
 	basic.Init(
 		config.WithSource(source),
-		config.WithApp(*appName),
+		config.WithApp(appName),
 	)
 	log.Info("[initCfg] init config completed")
 	initAppCfg()
