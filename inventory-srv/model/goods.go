@@ -53,26 +53,27 @@ func ChangeInventoryDBByGoods(goods *Goods, num int64) error {
 	return nil
 }
 
-func ChangeInventoryDB(goodsId uint, num int64) error {
+func ChangeInventoryDB(goodsId uint, num int64) (uint64, error) {
 	tx := db.Begin()
 	goods := &Goods{}
 	if err := tx.Select("id, inventory").First(&goods, goodsId).Error; err != nil {
 		tx.Rollback()
-		return err
+		return 0, err
 	}
 	inventory := int64(goods.Inventory) + num
 	if inventory < 0 {
-		return fmt.Errorf("inventory shortage")
+		return 0, fmt.Errorf("inventory shortage")
 	}
+	lastInventory := uint64(inventory)
 	err := tx.Model(goods).
 		Where("inventory = ?", goods.Inventory).
-		Update("inventory", uint64(inventory)).Error
+		Update("inventory", lastInventory).Error
 	if err != nil {
 		tx.Rollback()
-		return err
+		return 0, err
 	}
 	tx.Commit()
-	return nil
+	return lastInventory, nil
 }
 
 func GetInventoryFromCache(goodsId uint) (uint64, error) {

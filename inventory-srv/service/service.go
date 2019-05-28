@@ -13,11 +13,7 @@ var (
 )
 
 type Service struct {
-	Queue      map[uint32]*InventoryQueue
-	maxElemNum uint32
-	curElemNum uint32
-	elemNumMux sync.Mutex
-	ctx        context.Context
+	inventory *Inventory
 }
 
 func Init() {
@@ -31,7 +27,7 @@ func Init() {
 	log = z.GetLogger()
 
 	s = &Service{}
-	initQueue()
+	initInventory()
 
 	inited = true
 }

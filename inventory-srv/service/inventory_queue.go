@@ -1,32 +1,24 @@
 package service
 
 import (
-	"go.uber.org/zap"
-	"shop/basic/config"
 	"shop/inventory-srv/consts"
 	"sync"
 )
 
-type InventoryQueueCfg struct {
-	QueueNum uint32 `json:"queue_num"`
-}
-
-func initQueue() {
-	cfg := &InventoryQueueCfg{}
-	err := config.C().Path("inventory_queue", cfg)
-	if err != nil {
-		log.Panic("get inventory_queue config fault", zap.Error(err))
-	}
-	s.Queue = make(map[uint32]*InventoryQueue)
-	for i := uint32(0); i < cfg.QueueNum; i++ {
-		s.Queue[i] = NewInventoryQueue(i)
-	}
-}
+const (
+	INVENTORY_ACTION_STATUS_WAITING = iota
+	INVENTORY_ACTION_STATUS_RUNING
+	INVENTORY_ACTION_STATUS_CLOSED
+)
 
 type InventoryAction struct {
+	mu      sync.RWMutex
+	status  int8
 	Type    int8
 	GoodsId uint
-	num     int64
+	Num     int64
+	result  chan uint64
+	err     chan error
 }
 
 type InventoryQueueNode struct {
