@@ -1,9 +1,17 @@
 package handler
 
-import z "shop/plugins/zap"
+import (
+	z "shop/plugins/zap"
+	"sync"
+)
 
-var log *z.Logger
+var (
+	log  *z.Logger
+	once sync.Once
+)
 
 func Init() {
-	log = z.GetLogger()
+	once.Do(func() {
+		log = z.GetLogger()
+	})
 }

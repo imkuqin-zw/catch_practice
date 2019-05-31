@@ -6,10 +6,9 @@ import (
 )
 
 var (
-	m      sync.RWMutex
-	inited bool
-	log    *z.Logger
-	s      *Service
+	once sync.Once
+	log  *z.Logger
+	s    *Service
 )
 
 type Service struct {
@@ -17,17 +16,10 @@ type Service struct {
 }
 
 func Init() {
-	m.Lock()
-	defer m.Unlock()
+	once.Do(func() {
+		log = z.GetLogger()
+		s = &Service{}
+		initInventory()
+	})
 
-	if inited {
-		log.Warn("service initialized")
-		return
-	}
-	log = z.GetLogger()
-
-	s = &Service{}
-	initInventory()
-
-	inited = true
 }

@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/micro/go-log"
@@ -11,9 +10,8 @@ import (
 )
 
 var (
-	db     *gorm.DB
-	inited bool
-	m      sync.RWMutex
+	db   *gorm.DB
+	once sync.Once
 )
 
 func init() {
@@ -21,16 +19,9 @@ func init() {
 }
 
 func initDB() {
-	m.Lock()
-	defer m.Unlock()
-
-	if inited {
-		err := fmt.Errorf("[initMysql] mysql initialized")
-		log.Logf(err.Error())
-		return
-	}
-	initMysql()
-	inited = true
+	once.Do(func() {
+		initMysql()
+	})
 }
 
 // Mysql mySQL 配置

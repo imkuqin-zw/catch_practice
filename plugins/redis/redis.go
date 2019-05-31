@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"fmt"
 	r "github.com/go-redis/redis"
 	"github.com/micro/go-log"
 	"shop/basic"
@@ -13,8 +12,7 @@ import (
 
 var (
 	client r.Cmdable
-	inited bool
-	m      sync.RWMutex
+	once   sync.Once
 )
 
 func init() {
@@ -52,25 +50,17 @@ func (s *RedisSentinel) GetNodes() []string {
 }
 
 func initRedis() {
-	m.Lock()
-	defer m.Unlock()
-
-	if inited {
-		err := fmt.Errorf("[initRedis] redis initialized")
-		log.Logf(err.Error())
-		return
-	}
-
-	log.Log("[initRedis] redis initializing start")
-	c := config.C()
-	cfg := &redis{}
-	err := c.App("redis", cfg)
-	if err != nil {
-		log.Fatalf("[initRedis] %s", err)
-		panic(err)
-	}
-	connReids(cfg)
-	log.Logf("[initRedis] redis initializing completed")
+	once.Do(func() {
+		c := config.C()
+		cfg := &redis{}
+		err := c.App("redis", cfg)
+		if err != nil {
+			log.Fatalf("[initRedis] %s", err)
+			panic(err)
+		}
+		connReids(cfg)
+		log.Logf("[initRedis] redis initializing completed")
+	})
 }
 
 func initSingle(redisConfig *redis) {

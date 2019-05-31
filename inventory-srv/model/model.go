@@ -10,25 +10,16 @@ import (
 )
 
 var (
-	lock   sync.RWMutex
-	inited bool
-	log    *z.Logger
-	db     *gorm.DB
-	rd     redis.Cmdable
+	once sync.Once
+	log  *z.Logger
+	db   *gorm.DB
+	rd   redis.Cmdable
 )
 
 func Init() {
-	lock.Lock()
-	defer lock.Unlock()
-
-	if inited {
-		log.Warn("handle initialized")
-		return
-	}
-
-	log = z.GetLogger()
-	db = m.GetMysqlDB()
-	rd = r.GetRedis()
-
-	inited = true
+	once.Do(func() {
+		log = z.GetLogger()
+		db = m.GetMysqlDB()
+		rd = r.GetRedis()
+	})
 }

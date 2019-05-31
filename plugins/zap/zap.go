@@ -28,25 +28,17 @@ func init() {
 
 type Logger struct {
 	*zap.Logger
-	sync.RWMutex
+	once      sync.Once
 	Opts      *Options
 	zapConfig zap.Config
-	inited    bool
 }
 
 func initLogger() {
-	l.Lock()
-	defer l.Unlock()
-
-	if l.inited {
-		l.Info("[initLogger] zap logger initialized")
-		return
-	}
-
-	l.loadCfg()
-	l.init()
-	l.Info("[initLogger] zap logger initializing completed")
-	l.inited = true
+	l.once.Do(func() {
+		l.loadCfg()
+		l.init()
+		l.Info("[initLogger] zap logger initializing completed")
+	})
 }
 
 func (l *Logger) init() {
