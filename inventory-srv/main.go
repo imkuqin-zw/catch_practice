@@ -63,7 +63,7 @@ func main() {
 		micro.RegisterInterval(cfg.RegTTL),
 		micro.Address(cfg.Address),
 		micro.Action(func(context *cli.Context) {
-			//init model
+			//init models
 			model.Init()
 			//init service
 			service.Init()

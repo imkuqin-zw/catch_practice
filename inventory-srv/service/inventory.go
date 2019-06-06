@@ -122,6 +122,8 @@ func (s *Inventory) push(act *InventoryAction) error {
 	return nil
 }
 
+/********** 外部服务 ***********/
+
 func (s *Service) GetInventory(goodsId uint) (uint64, error) {
 	inventory, err := model.GetInventoryFromCache(goodsId)
 	if err == nil || err != redis.Nil {
