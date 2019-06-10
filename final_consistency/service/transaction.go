@@ -1,7 +1,9 @@
 package service
 
+import "shop/final_consistency/models"
+
 //存储预发送消息
-func (s *Service) StoreMsgWaitingConfirm(msg *TransactionMsg) {
+func (s *Service) StoreMsgWaitingConfirm(msg *models.TransactionMsg) {
 
 }
 
