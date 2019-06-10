@@ -26,6 +26,7 @@ type RepoConf struct {
 
 type TransactionMsg interface {
 	GetTransMsgById(uint64) (*models.TransactionMsg, error)
+	InsertTransMsg(m *models.TransactionMsg) error
 }
 
 type Repository interface {

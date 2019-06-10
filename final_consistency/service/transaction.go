@@ -3,8 +3,8 @@ package service
 import "shop/final_consistency/models"
 
 //存储预发送消息
-func (s *Service) StoreMsgWaitingConfirm(msg *models.TransactionMsg) {
-
+func (s *Service) StoreMsgWaitingConfirm(msg *models.TransactionMsg) error {
+	return s.InsertTransMsg(msg)
 }
 
 //确认预发送消息并发送消息
